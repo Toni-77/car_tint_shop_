@@ -1,8 +1,11 @@
 import { Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import BookingDrawer from "@/components/BookingDrawer"
 
-export function CTASection() {
+interface CTASectionProps {
+  onBookClick: (e: React.MouseEvent) => void;
+}
+
+export function CTASection({ onBookClick }: CTASectionProps) {
   return (
     <section className="bg-primary px-6 lg:px-16 py-12 lg:py-20">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8">
@@ -16,16 +19,25 @@ export function CTASection() {
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-  <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-bold px-8 h-11">
-    <a href="tel:773-800-4411">
-      <Phone className="h-4 w-4 mr-2" />
-      773-800-4411
-    </a>
-  </Button>
-
-  <BookingDrawer />
-</div>
-
+          <Button
+            asChild
+            size="lg"
+            className="bg-white text-primary hover:bg-white/90 font-bold text-base tracking-wide px-8"
+          >
+            <a href="tel:773-800-4411">
+              <Phone className="h-4 w-4 mr-2" />
+              773-800-4411
+            </a>
+          </Button>
+          <Button
+            onClick={onBookClick}
+            size="lg"
+            variant="outline"
+            className="bg-black/30 border-2 border-white/30 text-white hover:border-white hover:bg-black/50 font-bold text-base tracking-wide px-8"
+          >
+            Book Appointment
+          </Button>
+        </div>
       </div>
     </section>
   )
