@@ -17,7 +17,8 @@ export async function sendManualBookingRequest(formData: any) {
 
     // 2. Trigger Email Notification via Resend
     const { error } = await resend.emails.send({
-      from: 'Booking System <onboarding@resend.dev>', 
+      from: 'Booking System <onboarding@resend.dev>', // need to update if using onother email domain 
+      // update the environment MY_EMAIL in netlify if this changes
       to: [process.env.MY_EMAIL as string], 
       replyTo: formData.email, 
       subject: `New Booking: ${formData.firstName} ${formData.lastName}`,
