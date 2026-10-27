@@ -1,46 +1,47 @@
-import { Phone } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import BookingDrawer from "@/components/BookingDrawer"
+"use client"
 
-export function CTASection() {
+import { Button } from "@/components/ui/button"
+import { Phone } from "lucide-react"
+
+interface CTASectionProps {
+  onBookClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+}
+
+export function CTASection({ onBookClick }: CTASectionProps) {
   return (
-    <section className="bg-primary px-6 py-12 lg:px-16 lg:py-20">
-      <div className="flex flex-col items-center justify-between gap-6 lg:flex-row lg:gap-8">
-        {/* Call-to-action heading */}
-        <div className="text-center lg:text-left">
-          <h2 className="mb-2 font-sans text-4xl font-bold tracking-wide text-white lg:text-5xl">
+    <section id="contact-cta" className="w-full bg-[#E31E24] py-12 px-6 sm:px-12 lg:px-20 border-t border-[#B81418]">
+      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+        
+        {/* Left text layout container */}
+        <div className="flex flex-col text-left">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-2">
             Ready to Tint Your Ride?
           </h2>
-
-          <p className="text-base text-white/80">
+          <p className="text-white/90 text-sm sm:text-base font-medium">
             Call us or book online — Mon–Sat, 9:00 AM to 5:30 PM
           </p>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex w-full flex-col gap-4 sm:flex-row lg:w-auto">
-          {/* Phone button */}
-          <Button
-            asChild
-            size="lg"
-            className="bg-white px-8 text-base font-bold tracking-wide text-primary hover:bg-white/90"
+        {/* Right alignment action control elements container */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shrink-0">
+          {/* Secondary phone button contact link layer */}
+          <a
+            href="tel:773-800-4411"
+            className="flex items-center justify-center gap-2 bg-white text-[#111111] font-bold px-6 py-3.5 rounded text-sm hover:bg-neutral-100 transition-colors shadow-sm"
           >
-            <a href="tel:773-800-4411">
-              <Phone
-                aria-hidden="true"
-                className="mr-2 h-4 w-4"
-              />
+            <Phone className="h-4 w-4 text-[#E31E24] fill-[#E31E24]" />
+            <span>773-800-4411</span>
+          </a>
 
-              773-800-4411
-            </a>
+          {/* Primary scheduling interaction engine switch element */}
+          <Button
+            onClick={onBookClick}
+            className="bg-[#111111] hover:bg-black text-white font-extrabold px-8 py-6 rounded text-sm tracking-wide transition-colors shadow-sm"
+          >
+            Book Appointment
           </Button>
-
-          {/* Reusable appointment button */}
-          <BookingDrawer
-            showIcon={false}
-            buttonClassName="bg-black/30 border-2 border-white/30 text-white hover:border-white hover:bg-black/50 font-bold text-base tracking-wide px-8"
-          />
         </div>
+
       </div>
     </section>
   )

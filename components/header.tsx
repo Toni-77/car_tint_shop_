@@ -1,10 +1,11 @@
 "use client"
-import BookingDrawer from "@/components/BookingDrawer"
+
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Phone, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useBooking } from "@/hooks/useBooking"
 
 const navLinks = [
   { href: "#", label: "Home" },
@@ -16,6 +17,7 @@ const navLinks = [
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { openBooking } = useBooking()
 
   return (
     <header className="w-full relative z-50">
@@ -52,8 +54,12 @@ export function Header() {
             <span className="font-semibold text-sm text-white">773-800-4411</span>
           </a>
           
-          {/* Desktop Booking Drawer */}
-          <BookingDrawer />
+          <Button 
+            onClick={openBooking}
+            className="bg-primary hover:bg-primary/90 text-white font-semibold px-5 py-2.5 rounded-md text-sm transition-all duration-200"
+          >
+            Book Appointment
+          </Button>
         </div>
       </nav>
 
@@ -90,12 +96,16 @@ export function Header() {
         </div>
 
         <div className="flex gap-3 px-4 py-3">
-          <Button className="flex-1 bg-primary hover:bg-primary/90 text-white rounded-md text-sm">
+          <Button className="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white rounded-md text-sm border border-neutral-700">
             Get Quote
           </Button>
           
-          {/* Mobile Booking Drawer */}
-          <BookingDrawer />
+          <Button 
+            onClick={openBooking}
+            className="flex-1 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-semibold transition-all duration-200"
+          >
+            Book Appointment
+          </Button>
         </div>
 
         {mobileMenuOpen && (

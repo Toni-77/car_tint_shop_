@@ -1,5 +1,4 @@
 allowBuilds:
-  '@firebase/util': true
-  esbuild: true
-  protobufjs: true
-  sharp: true
+  '@firebase/util': false
+  esbuild: false
+  protobufjs: false
