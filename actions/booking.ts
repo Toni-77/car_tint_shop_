@@ -1,91 +1,132 @@
 'use server';
 
 import { Resend } from 'resend';
-import { dbAdmin } from '@/utils/firebaseAdmin';
+import { db } from '@/utils/firebase'; 
+import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { z } from 'zod';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendManualBookingRequest(formData: any) {
+// Define strict validation rules for structural verification and sanitization
+const BookingSchema = z.object({
+  firstName: z.string().min(1, "First name is required").max(50).trim(),
+  lastName: z.string().min(1, "Last name is required").max(50).trim(),
+  
+  // Email Validation
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please provide a valid email format (e.g., name@domain.com)")
+    .toLowerCase()
+    .trim(),
+  
+  // Phone Validation (Accepts patterns: 1234567890, 123-456-7890, (123) 456-7890)
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(
+      /^\+?[1-9]\d{0,3}?[- .]?\(?(?:\d{3})\)?[- .]?\d{3}[- .]?\d{4}$/,
+      "Please enter a valid phone number"
+    )
+    .trim(),
+  
+  // Car Data Validation
+  year: z
+    .string()
+    .regex(/^\d{4}$/, "Year must be exactly 4 digits")
+    .refine((val) => {
+      const numericYear = parseInt(val, 10);
+      const currentYear = new Date().getFullYear();
+      return numericYear >= 1900 && numericYear <= currentYear + 1;
+    }, "Please enter a valid automotive year"),
+  
+  make: z.string().min(1, "Vehicle make is required").max(50).trim(),
+  model: z.string().min(1, "Vehicle model is required").max(50).trim(),
+  
+  // Booking Context Verification
+  service: z.string().min(1, "Please select a service").trim(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+  timeSlot: z.string().min(1, "Please select a time slot").trim()
+});
+
+export async function sendManualBookingRequest(rawFormData: any) {
   try {
-    // 1. Guard against empty variables
-    if (!process.env.MY_EMAIL) {
-      console.error("Missing critical environment token configuration: MY_EMAIL");
-      return { success: false, error: "Server destination email environment token is not configured." };
-    }
+    // 1. Filter out un-declared parameters and evaluate inputs
+    const validatedData = BookingSchema.parse(rawFormData);
 
-    if (!process.env.RESEND_API_KEY) {
-      console.error("Missing critical environment token configuration: RESEND_API_KEY");
-      return { success: false, error: "Resend API authentication key is missing." };
-    }
-
-    // 2. Format a clean JavaScript Date Instance safely
-    let appointmentDateInstance: Date;
-    try {
-      const [year, month, day] = formData.date.split('-').map(Number);
-      const timeMatch = formData.timeSlot.match(/^(\d+):(\d+)\s+(AM|PM)$/i);
-      
-      if (!timeMatch) {
-        throw new Error(`Unparseable slot format returned: ${formData.timeSlot}`);
-      }
-
-      let [_, hoursStr, minutesStr, modifier] = timeMatch;
-      let hours = parseInt(hoursStr, 10);
-      const minutes = parseInt(minutesStr, 10);
-
-      if (modifier.toUpperCase() === 'PM' && hours < 12) hours += 12;
-      if (modifier.toUpperCase() === 'AM' && hours === 12) hours = 0;
-
-      // Construct a valid local date instance safely
-      appointmentDateInstance = new Date(year, month - 1, day, hours, minutes);
-
-      if (isNaN(appointmentDateInstance.getTime())) {
-        throw new Error("Resulting Date math generated an Invalid Date value.");
-      }
-    } catch (dateParseError) {
-      console.error("Date formatting exception intercepted:", dateParseError);
-      appointmentDateInstance = new Date();
-    }
-
-    // 3. Save to Firestore using Admin SDK
-    await dbAdmin.collection("bookings").add({
-      ...formData,
-      createdAt: new Date(),
-      appointmentDate: appointmentDateInstance
+    // 2. Save structured dataset to Firestore
+    const docRef = await addDoc(collection(db, "bookings"), {
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      email: validatedData.email,
+      phone: validatedData.phone,
+      vehicle: {
+        year: validatedData.year,
+        make: validatedData.make,
+        model: validatedData.model
+      },
+      service: validatedData.service,
+      date: validatedData.date,
+      timeSlot: validatedData.timeSlot,
+      createdAt: Timestamp.now(),
+      appointmentTimestamp: Timestamp.fromDate(new Date(`${validatedData.date} ${validatedData.timeSlot}`))
     });
 
-    // 4. Trigger Email Notification via Resend
+    // 3. Dispatch alert transaction via Resend APIs
     const { error } = await resend.emails.send({
-      from: 'Booking System <onboarding@resend.dev>', 
-      to: [process.env.MY_EMAIL], 
-      replyTo: formData.email || undefined, 
-      subject: `New Booking: ${formData.firstName || 'Customer'} ${formData.lastName || ''}`,
+      from: 'DNA Motor Works Bookings <onboarding@resend.dev>', 
+      to: [process.env.MY_EMAIL as string], 
+      replyTo: validatedData.email, 
+      subject: `New Booking Request: ${validatedData.year} ${validatedData.make}`,
       html: `
-        <div style="font-family: sans-serif; border: 1px solid #ddd; padding: 20px; border-radius: 10px; max-width: 600px;">
-          <h2 style="color: #2563eb; margin-top: 0;">New Appointment Request</h2>
-          <p><strong>Customer:</strong> ${formData.firstName || ''} ${formData.lastName || ''}</p>
-          <p><strong>Vehicle:</strong> ${formData.year || ''} ${formData.make || ''} ${formData.model || ''}</p>
-          <p><strong>Service:</strong> ${formData.service || ''}</p>
-          <p><strong>Date:</strong> ${formData.date || ''} at ${formData.timeSlot || ''}</p>
+        <div style="font-family: Arial, sans-serif; border: 1px solid #e2e8f0; padding: 24px; border-radius: 8px; max-width: 600px; color: #1e293b;">
+          <h2 style="color: #2563eb; margin-top: 0; font-size: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">New Appointment Confirmation</h2>
           
-          <div style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #eee;">
-            <p style="margin: 0;"><strong>Phone:</strong> <a href="tel:${formData.phone || ''}">${formData.phone || ''}</a> (Click to call)</p>
-            <p style="margin: 5px 0 0 0;"><strong>Email:</strong> <a href="mailto:${formData.email || ''}">${formData.email || ''}</a></p>
+          <table style="width: 100%; margin-top: 16px; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 6px 0; color: #64748b; width: 35%;"><strong>Customer:</strong></td>
+              <td style="padding: 6px 0; color: #0f172a;">${validatedData.firstName} ${validatedData.lastName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #64748b;"><strong>Vehicle:</strong></td>
+              <td style="padding: 6px 0; color: #0f172a;">${validatedData.year} ${validatedData.make} ${validatedData.model}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #64748b;"><strong>Service Requested:</strong></td>
+              <td style="padding: 6px 0; color: #0f172a;">${validatedData.service}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #64748b;"><strong>Requested Time:</strong></td>
+              <td style="padding: 6px 0; color: #0f172a; font-weight: bold;">${validatedData.date} at ${validatedData.timeSlot}</td>
+            </tr>
+          </table>
+          
+          <div style="margin-top: 24px; padding: 16px; background-color: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <p style="margin: 0; font-size: 14px;"><strong>Contact Information:</strong></p>
+            <p style="margin: 8px 0 0 0; font-size: 14px;">Phone: <a href="tel:${validatedData.phone}" style="color: #2563eb; text-decoration: none;">${validatedData.phone}</a></p>
+            <p style="margin: 4px 0 0 0; font-size: 14px;">Email: <a href="mailto:${validatedData.email}" style="color: #2563eb; text-decoration: none;">${validatedData.email}</a></p>
           </div>
-          <p style="font-size: 12px; color: #666; margin-top: 15px;">
-            <strong>Tip:</strong> You can hit 'Reply' in your email app to contact the customer directly.
-          </p>
+          
+          <p style="margin-top: 24px; margin-bottom: 0; font-size: 11px; color: #94a3b8;">Firestore Document ID: ${docRef.id}</p>
         </div>
       `,
     });
 
     if (error) {
-      console.error("Resend API Error response returned:", error);
+      console.error("Resend delivery exception encountered:", error);
       throw new Error(error.message);
     }
 
     return { success: true };
   } catch (error: any) {
-    console.error("Booking Error Catch Block execution path:", error);
-    return { success: false, error: error?.message || "Failed to process booking execution path." };
+    console.error("Server Action Processing Error:", error);
+    
+    // Format error feedback if triggered by schema validation breakdown
+    if (error instanceof z.ZodError) {
+      const issueSummary = error.errors.map(err => err.message).join(' | ');
+      return { success: false, error: issueSummary };
+    }
+
+    return { success: false, error: error.message || "An unhandled booking failure occurred" };
   }
 }
