@@ -13,52 +13,65 @@ export default function BookingForm() {
     date: '', timeSlot: ''
   });
 
-  // Business Logic for Saturday (9-3:30) and Weekdays (9-5)
+  // Balanced Business Logic for Saturday (9-3:30) and Weekdays (9-5)
   const availableSlots = useMemo(() => {
     if (!formData.date) return [];
     
-    const [year, month, day] = formData.date.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
-    const dayOfWeek = date.getDay(); 
-    
-    if (dayOfWeek === 0) return []; // Sunday Closed
+    try {
+      const parts = formData.date.split('-');
+      if (parts.length !== 3) return [];
 
-    const slots = [];
-    const endHour = (dayOfWeek === 6) ? 15 : 17;
-    const endMinute = (dayOfWeek === 6) ? 30 : 0;
+      const [year, month, day] = parts.map(Number);
+      // Corrected month offset calculation (month - 1) to match JavaScript 0-indexing
+      const date = new Date(year, month - 1, day); 
+      
+      if (isNaN(date.getTime())) return []; // Safeguard against invalid dates
 
-    for (let hour = 9; hour <= endHour; hour++) {
-      for (let min of [0, 30]) {
-        if (hour === endHour && min > endMinute) break;
-        const h = hour > 12 ? hour - 12 : hour;
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const time = `${h}:${min === 0 ? '00' : '30'} ${ampm}`;
-        slots.push(time);
+      const dayOfWeek = date.getDay(); 
+      if (dayOfWeek === 0) return []; // Sunday Closed
+
+      const slots = [];
+      const endHour = (dayOfWeek === 6) ? 15 : 17;
+      const endMinute = (dayOfWeek === 6) ? 30 : 0;
+
+      for (let hour = 9; hour <= endHour; hour++) {
+        for (let min of) {
+          if (hour === endHour && min > endMinute) break;
+          const h = hour > 12 ? hour - 12 : hour;
+          const ampm = hour >= 12 ? 'PM' : 'AM';
+          const time = `${h}:${min === 0 ? '00' : '30'} ${ampm}`;
+          slots.push(time);
+        }
       }
+      return slots;
+    } catch (e) {
+      console.error("Failed parsing booking slots timeline:", e);
+      return [];
     }
-    return slots;
   }, [formData.date]);
 
   const handleFinalSubmit = async () => {
     if (!formData.timeSlot) return alert("Please select a time.");
     
-    setLoading(true); // Button enters "Sending..."
+    // Debug helper to easily view active properties before making network requests
+    console.log("Submitting booking request payload details:", formData);
+    
+    setLoading(true); 
 
     try {
-      // This single call handles both Firestore save and Resend email
       const result = await sendManualBookingRequest(formData);
       
-      if (result.success) {
+      if (result && result.success) {
         alert("Request Sent! I will contact you shortly to confirm.");
         window.location.reload();
       } else {
-        alert("Error: " + result.error);
+        alert("Error processing transaction: " + (result?.error || "Unknown platform exception"));
       }
     } catch (err) {
-      console.error("Submission crash:", err);
-      alert("Something went wrong. Please check your connection.");
+      console.error("Submission crash caught on UI thread:", err);
+      alert("Something went wrong. Please check your network connection.");
     } finally {
-      setLoading(false); // ALWAYS unlocks the button
+      setLoading(false); 
     }
   };
 
@@ -134,7 +147,7 @@ export default function BookingForm() {
               >
                 {time}
               </button>
-            )) : <p className="col-span-3 text-center text-gray-400 py-6 text-sm">Please select a date (Mon-Sat).</p>}
+            )) : <p className="col-span-3 text-center text-gray-400 py-6 text-sm">Please select a valid operating date (Mon-Sat).</p>}
           </div>
 
           <div className="flex gap-2 pt-4 border-t">
