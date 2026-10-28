@@ -1,12 +1,25 @@
 import * as admin from 'firebase-admin';
 
-if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
+function initFirebaseAdmin() {
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!raw) {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is not set');
+  }
 
-  admin.initializeApp({
+  let serviceAccount;
+  try {
+    serviceAccount = JSON.parse(raw);
+  } catch {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT is not valid JSON');
+  }
+
+  console.log('Firebase Admin using project:', serviceAccount.project_id);
+
+  return admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   });
 }
 
-export const dbAdmin = admin.firestore();
+const app = admin.apps.length ? admin.app() : initFirebaseAdmin();
+
+export const dbAdmin = admin.firestore(app);
