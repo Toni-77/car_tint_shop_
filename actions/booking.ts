@@ -21,10 +21,7 @@ export async function sendManualBookingRequest(formData: any) {
     // 2. Format a clean JavaScript Date Instance safely
     let appointmentDateInstance: Date;
     try {
-      // Split the input date string safely (YYYY-MM-DD)
       const [year, month, day] = formData.date.split('-').map(Number);
-      
-      // Parse out the hours and minutes from strings like "9:30 AM" or "12:00 PM"
       const timeMatch = formData.timeSlot.match(/^(\d+):(\d+)\s+(AM|PM)$/i);
       
       if (!timeMatch) {
@@ -46,7 +43,6 @@ export async function sendManualBookingRequest(formData: any) {
       }
     } catch (dateParseError) {
       console.error("Date formatting exception intercepted:", dateParseError);
-      // Clean fallback string generation if manual time math hits unexpected inputs
       appointmentDateInstance = new Date();
     }
 
