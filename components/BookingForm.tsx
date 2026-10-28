@@ -13,6 +13,7 @@ export default function BookingForm() {
     date: '', timeSlot: ''
   });
 
+  // Business Logic for Saturday (9:00 AM - 2:30 PM) and Weekdays (9:00 AM - 4:00 PM)
   const availableSlots = useMemo(() => {
     if (!formData.date) return [];
     
@@ -26,16 +27,20 @@ export default function BookingForm() {
       if (isNaN(date.getTime())) return []; 
 
       const dayOfWeek = date.getDay(); 
-      if (dayOfWeek === 0) return []; 
+      if (dayOfWeek === 0) return []; // Sunday Closed
 
       const slots = [];
-      const endHour = (dayOfWeek === 6) ? 15 : 17;
+      
+      // Enforce a strict 1-hour cutoff buffer before the doors close
+      // Weekdays close at 5 PM -> Last slot allowed is 4:00 PM (Hour 16)
+      // Saturdays close at 3:30 PM -> Last slot allowed is 2:30 PM (Hour 14)
+      const endHour = (dayOfWeek === 6) ? 14 : 16;
       const endMinute = (dayOfWeek === 6) ? 30 : 0;
 
-      // Incremental number counter bypasses array stripping issues completely
       for (let hour = 9; hour <= endHour; hour++) {
         for (let min = 0; min <= 30; min += 30) {
           if (hour === endHour && min > endMinute) break;
+          
           const h = hour > 12 ? hour - 12 : hour;
           const ampm = hour >= 12 ? 'PM' : 'AM';
           const time = `${h}:${min === 0 ? '00' : '30'} ${ampm}`;
@@ -74,6 +79,7 @@ export default function BookingForm() {
 
   return (
     <div className="space-y-4 text-slate-900 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+      {/* STEP 1: VEHICLE & SERVICE */}
       {step === 1 && (
         <div className="space-y-3 animate-in fade-in duration-300">
           <h3 className="font-bold text-lg border-b pb-1">1. Vehicle & Service</h3>
@@ -96,6 +102,7 @@ export default function BookingForm() {
         </div>
       )}
 
+      {/* STEP 2: CONTACT INFO */}
       {step === 2 && (
         <div className="space-y-3 animate-in fade-in duration-300">
           <h3 className="font-bold text-lg border-b pb-1">2. Contact Info</h3>
@@ -118,15 +125,16 @@ export default function BookingForm() {
         </div>
       )}
 
+      {/* STEP 3: TIME */}
       {step === 3 && (
         <div className="space-y-3 animate-in fade-in duration-300">
           <h3 className="font-bold text-lg border-b pb-1">3. Desired Time</h3>
           <input 
             type="date" 
-            min={new Date().toISOString().split('T')} 
+            min={new Date().toISOString().split('T')[0]} 
             className="w-full p-3 border rounded-lg bg-gray-50" 
             value={formData.date}
-            onChange={e => setFormData({...formData, date: e.target.value})} 
+            onChange={e => setFormData({...formData, date: e.target.value, timeSlot: ''})} 
           />
           
           <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto p-1">
