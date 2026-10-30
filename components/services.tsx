@@ -23,7 +23,7 @@ const services = [
 
 export function Services() {
   return (
-    <section className="px-6 lg:px-16 py-12 lg:py-16 bg-card">
+    <section className="px-6 lg:px-16 py-12 lg:py-16 bg-[oklch(0.17_0_0)] border-y border-white/5">
       <div className="text-center mb-12">
         <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-2">
           What We Do
@@ -37,18 +37,18 @@ export function Services() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {services.map((service) => (
-          <div key={service.id} id={service.id} className="group relative overflow-hidden">
+          <div key={service.id} id={service.id} className="group relative">
             <h3 className="text-xl font-semibold text-white mb-4 text-center">
               {service.title}
             </h3>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-white/15 shadow-xl shadow-black/60 ring-1 ring-black/50 transition-colors duration-300 group-hover:border-primary/60">
               <Image
                 src={service.image}
                 alt={service.alt}
                 fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                className="object-cover brightness-[1.15] contrast-[1.05] transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
               <div className="absolute bottom-4 left-4">
                 <button className="bg-primary hover:bg-primary/90 text-white text-xs px-4 py-2 rounded font-semibold">
                   Learn More

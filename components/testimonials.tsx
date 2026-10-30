@@ -23,7 +23,7 @@ const reviews = [
 
 export function Testimonials() {
   return (
-    <section id="reviews" className="px-6 lg:px-16 py-16 lg:py-24 bg-card">
+    <section id="reviews" className="px-6 lg:px-16 py-16 lg:py-24 bg-[oklch(0.17_0_0)] border-y border-white/5">
       <div className="flex items-center gap-3 mb-4">
         <span className="text-xs tracking-[3px] text-primary uppercase font-semibold">
           Happy Customers
@@ -39,7 +39,7 @@ export function Testimonials() {
         {reviews.map((review) => (
           <div
             key={review.id}
-            className="bg-secondary border border-border p-6 hover:border-primary/40 transition-colors"
+            className="bg-[oklch(0.22_0_0)] border border-white/10 p-6 hover:border-primary/40 transition-colors"
           >
             <div className="text-4xl font-serif text-primary opacity-60 leading-none mb-2">
               &ldquo;

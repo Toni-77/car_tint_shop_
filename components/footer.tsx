@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Phone, MapPin, Mail } from "lucide-react"
+import { openingRange } from "@/lib/booking-rules"
 
 const serviceLinks = [
   { href: "#window-tint", label: "Window Tint" },
@@ -87,8 +88,10 @@ export function Footer() {
             Hours
           </h4>
           <div className="text-muted-foreground text-sm space-y-1">
-            <p className="text-white font-medium">Mon – Sat</p>
-            <p>9:00 AM – 5:30 PM</p>
+            <p className="text-white font-medium">Mon – Fri</p>
+            <p>{openingRange('weekday')}</p>
+            <p className="text-white font-medium mt-3">Saturday</p>
+            <p>{openingRange('saturday')}</p>
             <p className="text-muted-foreground/60 mt-3">Sunday: Closed</p>
           </div>
         </div>

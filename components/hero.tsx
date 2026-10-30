@@ -4,12 +4,10 @@
 import React from 'react'
 import Image from 'next/image'
 import { Button } from "@/components/ui/button"
+import { useBooking } from "@/hooks/useBooking"
 
-interface HeroProps {
-  onBookClick: (e: React.MouseEvent) => void;
-}
-
-export function Hero({ onBookClick }: HeroProps) {
+export function Hero() {
+  const { openBooking, openQuote } = useBooking()
   return (
     <section className="relative w-full min-h-[85vh] bg-black flex items-center overflow-hidden px-6 md:px-12 lg:px-20 border-b border-gray-900">
       {/* Background Car Image Layout */}
@@ -42,15 +40,16 @@ export function Hero({ onBookClick }: HeroProps) {
         {/* Call to Action Button Row */}
         <div className="mt-8 flex flex-row items-center gap-4">
           <Button 
-            className="bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-semibold px-6 py-5 h-auto transition-transform active:scale-95 cursor-pointer"
+            onClick={openQuote}
+            className="h-12 bg-red-600 hover:bg-red-700 text-white rounded-md text-[15px] font-semibold px-7 transition-transform active:scale-95 cursor-pointer"
           >
             Get Quote
           </Button>
           
           <button
-            onClick={onBookClick}
+            onClick={openBooking}
             type="button"
-            className="border-2 border-red-600/80 hover:border-red-600 bg-transparent hover:bg-red-600/10 text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-all active:scale-95 cursor-pointer h-[44px]"
+            className="h-12 border-2 border-red-600/80 hover:border-red-600 bg-transparent hover:bg-red-600/10 text-white font-semibold px-7 rounded-md text-[15px] transition-all active:scale-95 cursor-pointer"
           >
             Book Appointment
           </button>

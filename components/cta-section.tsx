@@ -2,12 +2,11 @@
 
 import { Button } from "@/components/ui/button"
 import { Phone } from "lucide-react"
+import { openingRange } from "@/lib/booking-rules"
+import { useBooking } from "@/hooks/useBooking"
 
-interface CTASectionProps {
-  onBookClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
-}
-
-export function CTASection({ onBookClick }: CTASectionProps) {
+export function CTASection() {
+  const { openBooking } = useBooking()
   return (
     <section id="contact-cta" className="w-full bg-[#E31E24] py-12 px-6 sm:px-12 lg:px-20 border-t border-[#B81418]">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
@@ -18,7 +17,7 @@ export function CTASection({ onBookClick }: CTASectionProps) {
             Ready to Tint Your Ride?
           </h2>
           <p className="text-white/90 text-sm sm:text-base font-medium">
-            Call us or book online — Mon–Sat, 9:00 AM to 5:30 PM
+            Call us or book online — Mon–Fri {openingRange('weekday', '–')} · Sat {openingRange('saturday', '–')}
           </p>
         </div>
 
@@ -35,7 +34,7 @@ export function CTASection({ onBookClick }: CTASectionProps) {
 
           {/* Primary scheduling interaction engine switch element */}
           <Button
-            onClick={onBookClick}
+            onClick={openBooking}
             className="bg-[#111111] hover:bg-black text-white font-extrabold px-8 py-6 rounded text-sm tracking-wide transition-colors shadow-sm"
           >
             Book Appointment

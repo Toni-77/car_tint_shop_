@@ -70,15 +70,15 @@ export function WhyChooseUs() {
         </div>
 
         {/* Stats Visual Side */}
-        <div className="hidden lg:flex relative bg-secondary border border-border aspect-[4/3] items-center justify-center overflow-hidden">
-          <span className="absolute font-sans text-8xl tracking-widest text-primary/5 font-bold">
+        <div className="hidden lg:flex relative bg-secondary border border-border p-10 items-center justify-center overflow-hidden">
+          <span className="absolute font-sans text-[10rem] tracking-widest text-primary/10 font-bold select-none" aria-hidden="true">
             SNT
           </span>
-          <div className="relative z-10 grid grid-cols-2 gap-px bg-border border border-border w-4/5">
+          <div className="relative z-10 grid grid-cols-2 gap-px bg-border border border-border w-full">
             {stats.map((stat) => (
-              <div key={stat.label} className="bg-card p-6 text-center">
-                <div className="font-sans text-4xl text-primary tracking-wide font-bold">{stat.value}</div>
-                <div className="text-xs text-muted-foreground tracking-widest uppercase mt-1">{stat.label}</div>
+              <div key={stat.label} className="bg-card px-6 py-9 text-center">
+                <div className="font-sans text-5xl text-primary tracking-wide font-bold">{stat.value}</div>
+                <div className="text-sm text-muted-foreground tracking-widest uppercase mt-2">{stat.label}</div>
               </div>
             ))}
           </div>
